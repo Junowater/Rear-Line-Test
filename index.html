@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Meta tags for character encoding and viewport -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workstation Scheduling</title>
+    <!-- Link to External CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Header section -->
+    <header>
+        <h1>Workstation Scheduling</h1>
+        <!-- Date display -->
+        <p id="currentDate"></p>
+        <!-- Navigation buttons -->
+        <nav>
+            <button type="button" id="rotateAllBtn">Rotate Assignments</button>
+            <button type="button" id="prioritizeNewStationBtn">Prioritize New Station</button>
+            <button type="button" id="exportScheduleBtn">Export &amp; Save Schedule</button>
+            <button type="button" id="saveChangesBtn">Save Changes</button>
+        </nav>
+    </header>
+    <!-- Main content area -->
+    <main>
+        <!-- Schedule Section -->
+        <section id="schedule">
+            <table id="scheduleTable">
+                <!-- Schedule table will be generated here -->
+            </table>
+        </section>
+
+        <!-- Team Member Pool Section -->
+        <section id="teamMemberPoolSection">
+            <h2>Team Member Pool</h2>
+            <div id="teamMemberPool" class="pool" ondrop="dropToPool(event)" ondragover="allowDrop(event)">
+                <!-- Team members not assigned will appear here -->
+            </div>
+        </section>
+
+        <!-- Unassigned Team Members Section -->
+        <section id="unassignedTeamMembers">
+            <h3>Unassigned Team Members</h3>
+            <div id="unassignedContent">All team members are assigned in all quarters.</div>
+        </section>
+
+        <!-- Constraints Section -->
+        <section id="constraints">
+            <h3>Rotation Creation Constraints</h3>
+            <div id="constraintsList">
+                <!-- Constraints will be listed here -->
+            </div>
+            <!-- Add Constraint Form -->
+            <div id="addConstraintForm">
+                <h4>Add New Constraint</h4>
+                <label for="constraintTypeSelect">Constraint Type:</label>
+                <select id="constraintTypeSelect">
+                    <option value="csOncePerDay">Team member can only work on CS1 or CS2 once per day</option>
+                    <option value="noBackboardsAfterCS1">Team member cannot work on Backboards after CS1</option>
+                    <option value="noHogBackToBack">Cannot work on Hog stations back to back</option>
+                    <option value="noSequencingBackToBack">Cannot work on Sequencing stations back to back</option>
+                    <option value="backboardsOncePerDay">Team member can only work on Backboards 1 or Backboards 2 once per day</option>
+                    <option value="noSameStationTwice">Team member cannot be assigned to the same station twice</option>
+                    <option value="noSequencingKitsBackToBack">Team member cannot work on Sequencing A, Sequencing B, or Kits 1 back to back</option>
+                </select>
+                <input type="text" id="constraintDescriptionInput" placeholder="Constraint Description" />
+                <button type="button" id="addConstraintBtn">Add Constraint</button>
+            </div>
+        </section>
+
+        <!-- Team Member Skills Section -->
+        <section id="teamMemberSkills">
+            <h2>Team Member Skills</h2>
+            <!-- New team member addition form -->
+            <div>
+                <input type="text" id="newTeamMemberName" placeholder="Enter new team member name" />
+                <button type="button" id="addTeamMemberBtn">Add Team Member</button>
+            </div>
+            <table id="skillsTable">
+                <!-- Skills table will be generated here -->
+            </table>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="charts-container">
+            <!-- Snapshot Chart -->
+            <div class="chart-section">
+                <h3>Daily Schedule Snapshot</h3>
+                <canvas id="snapshotChart"></canvas>
+                <!-- Chart Buttons -->
+                <div class="chart-buttons">
+                    <button id="snapshotHideAllBtn">Hide All Team Members</button>
+                    <button id="snapshotShowAllBtn">Show All Team Members</button>
+                </div>
+            </div>
+            <!-- Weekly Stations Graph -->
+            <div class="chart-section">
+                <h3>Weekly Stations Overview</h3>
+                <canvas id="weeklyChart"></canvas>
+                <!-- New code: Dates Display -->
+                <div id="weeklyDates"></div>
+                <!-- Chart Buttons -->
+                <div class="chart-buttons">
+                    <button id="weeklyHideAllBtn">Hide All Team Members</button>
+                    <button id="weeklyShowAllBtn">Show All Team Members</button>
+                    <button id="resetWeekBtn">Reset Week</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Include Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Link to External JavaScript -->
+    <script src="js/scripts.js"></script>
+</body>
+</html>
