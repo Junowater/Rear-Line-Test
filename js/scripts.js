@@ -37,20 +37,19 @@ function getDefaultTeamMembers() {
     return [
         { name: "Gustavo G", stations: ["RFS", "3", "5", "6", "9", "10", "Hog 1", "Hog 2"], partialStations: [], active: true, unavailableQuarters: [] },
         { name: "Yosief M", stations: ["1", "2", "5", "7", "8", "9", "10", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
-{ name: "Finan A", stations: ["RFS", "4", "5", "6", "8", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
-{ name: "Muhammad A", stations: ["2", "6", "8", "9", "10" "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
-{ name: "Netnal S", stations: ["RFS", "2", "4", "5", "7", "8", "10", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
-{ name: "Raju K", stations: ["3", "4", "5", "6", "8", "9", "10", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
-{ name: "Merhawy F", stations: ["RFS", "1", "3", "5", "6", "8", "9", "10"] partialStations: [], active: true, unavailableQuarters: [] },
-{ name: "Abiel H", stations: ["RFS", "1", "2", "7", "8", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
-{ name: "Phaudi G", stations: ["RFS", "1", "3", "4", "5", "6", "7", "8", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
-{ name: "Mohammad F", stations: ["RFS", "1", "7", "8", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
-{ name: "Surinder P", stations: ["RFS", "4", "5", "7", "8", "9", "10"] partialStations: [], active: true, unavailableQuarters: [] },
-{ name: "Juliana J", stations: ["1", "3", "8", "9", "10", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
-{ name: "Musie A", stations: ["1", "3", "6", "7", "8", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
-{ name: "Hamidreza G", stations: ["RFS", "2", "4", "5", "7", "8", "9", "10", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
-{ name: "Daria S", stations: ["2", "3", "5", "8", "10", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
-                        
+        { name: "Finan A", stations: ["RFS", "4", "5", "6", "8", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+        { name: "Muhammad A", stations: ["2", "6", "8", "9", "10" "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+        { name: "Netnal S", stations: ["RFS", "2", "4", "5", "7", "8", "10", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+        { name: "Raju K", stations: ["3", "4", "5", "6", "8", "9", "10", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+        { name: "Merhawy F", stations: ["RFS", "1", "3", "5", "6", "8", "9", "10"] partialStations: [], active: true, unavailableQuarters: [] },
+        { name: "Abiel H", stations: ["RFS", "1", "2", "7", "8", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+        { name: "Phaudi G", stations: ["RFS", "1", "3", "4", "5", "6", "7", "8", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+        { name: "Mohammad F", stations: ["RFS", "1", "7", "8", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+        { name: "Surinder P", stations: ["RFS", "4", "5", "7", "8", "9", "10"] partialStations: [], active: true, unavailableQuarters: [] },
+        { name: "Juliana J", stations: ["1", "3", "8", "9", "10", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+        { name: "Musie A", stations: ["1", "3", "6", "7", "8", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+        { name: "Hamidreza G", stations: ["RFS", "2", "4", "5", "7", "8", "9", "10", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+        { name: "Daria S", stations: ["2", "3", "5", "8", "10", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
     ];
 }
 
