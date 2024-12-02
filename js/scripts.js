@@ -38,7 +38,7 @@ function getDefaultTeamMembers() {
         { name: "Gustavo G", stations: ["RFS", "3", "5", "6", "9", "10", "Hog 1", "Hog 2"], partialStations: [], active: true, unavailableQuarters: [] },
         { name: "Yosief M", stations: ["1", "2", "5", "7", "8", "9", "10", "Hog 1", "Hog 2"], partialStations: [], active: true, unavailableQuarters: [] },
         { name: "Finan A", stations: ["RFS", "4", "5", "6", "8", "Hog 1", "Hog 2"], partialStations: [], active: true, unavailableQuarters: [] },
-        { name: "Muhammad A", stations: ["2", "6", "8", "9", "10" "Hog 1", "Hog 2"], partialStations: [], active: true, unavailableQuarters: [] },
+        { name: "Muhammad A", stations: ["2", "6", "8", "9", "10", "Hog 1", "Hog 2"], partialStations: [], active: true, unavailableQuarters: [] },
         { name: "Netnal S", stations: ["RFS", "2", "4", "5", "7", "8", "10", "Hog 1", "Hog 2"], partialStations: [], active: true, unavailableQuarters: [] },
         { name: "Raju K", stations: ["3", "4", "5", "6", "8", "9", "10", "Hog 1", "Hog 2"], partialStations: [], active: true, unavailableQuarters: [] },
         { name: "Merhawy F", stations: ["RFS", "1", "3", "5", "6", "8", "9", "10"], partialStations: [], active: true, unavailableQuarters: [] },
