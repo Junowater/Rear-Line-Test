@@ -1,0 +1,286 @@
+/* CSS styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 10px;
+}
+th, td {
+    border: 1px solid #999;
+    text-align: center;
+    vertical-align: middle;
+    padding: 8px;
+    position: relative;
+}
+th {
+    background-color: #f2f2f2;
+}
+.draggable {
+    cursor: grab;
+    padding: 4px 8px;
+    background-color: #e0e0e0;
+    border: 1px solid #999;
+    border-radius: 4px;
+    display: inline-block;
+    margin: 2px;
+    user-select: none;
+}
+.draggable:active {
+    cursor: grabbing;
+}
+.droppable {
+    min-height: 50px;
+    background-color: #fafafa;
+}
+.dot {
+    height: 15px;
+    width: 15px;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 2px;
+    cursor: pointer;
+}
+.black-dot {
+    background-color: black;
+}
+.white-dot {
+    background-color: white;
+    border: 1px solid black;
+}
+.yellow-dot {
+    background-color: yellow;
+    border: 1px solid black;
+}
+.quarter-dot {
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 1px;
+    cursor: pointer;
+    border: 1px solid black;
+}
+.quarter-dot.active {
+    background-color: green;
+}
+.quarter-dot.inactive {
+    background-color: red;
+}
+.pool {
+    border: 1px solid #999;
+    padding: 10px;
+    min-height: 100px;
+    background-color: #f9f9f9;
+    margin-top: 10px;
+    overflow-y: auto;
+    max-height: 300px;
+}
+.inactive {
+    color: gray;
+    text-decoration: line-through;
+}
+/* Styles for Unassigned Team Members Box */
+#unassignedBox {
+    border: 1px solid #999;
+    padding: 10px;
+    margin-top: 20px;
+    background-color: #f9f9f9;
+}
+#unassignedBox h3 {
+    margin-top: 0;
+}
+/* Style for lists */
+.unassigned-list {
+    list-style-type: none;
+    padding-left: 0;
+}
+.unassigned-list li {
+    margin-left: 20px;
+}
+/* Styles for lock states */
+.locked {
+    background-color: red !important;
+    color: white;
+}
+.training {
+    background-color: yellow !important;
+}
+/* Styles for Constraints Box */
+#constraintsBox {
+    border: 1px solid #999;
+    padding: 10px;
+    margin-top: 20px;
+    background-color: #eef;
+}
+#constraintsBox h3 {
+    margin-top: 0;
+}
+.constraint-item {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+.constraint-item label {
+    margin-left: 8px;
+}
+.constraint-actions {
+    margin-left: auto;
+}
+.constraint-actions button {
+    margin-left: 5px;
+    padding: 2px 6px;
+    font-size: 12px;
+}
+/* Styles for Add Constraint Form */
+#addConstraintForm {
+    margin-top: 10px;
+}
+#addConstraintForm select, #addConstraintForm input {
+    margin-right: 5px;
+    padding: 4px;
+    font-size: 14px;
+}
+/* Styles for Team Member Skills */
+#skillsTable {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 10px;
+}
+#skillsTable th, #skillsTable td {
+    border: 1px solid #999;
+    text-align: center;
+    vertical-align: middle;
+    padding: 6px;
+}
+#skillsTable th {
+    background-color: #f2f2f2;
+}
+.dot-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+/* Scrollbar Styles */
+.pool::-webkit-scrollbar, #unassignedBox::-webkit-scrollbar, #constraintsBox::-webkit-scrollbar, #skillsTable::-webkit-scrollbar {
+    width: 8px;
+}
+.pool::-webkit-scrollbar-track, #unassignedBox::-webkit-scrollbar-track, #constraintsBox::-webkit-scrollbar-track, #skillsTable::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+.pool::-webkit-scrollbar-thumb, #unassignedBox::-webkit-scrollbar-thumb, #constraintsBox::-webkit-scrollbar-thumb, #skillsTable::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+.pool::-webkit-scrollbar-thumb:hover, #unassignedBox::-webkit-scrollbar-thumb:hover, #constraintsBox::-webkit-scrollbar-thumb:hover, #skillsTable::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+/* Responsive Design */
+@media (max-width: 1200px) {
+    table, #skillsTable {
+        font-size: 12px;
+    }
+    .constraint-actions button {
+        padding: 2px 4px;
+        font-size: 10px;
+    }
+}
+/* New Styles for Charts */
+.charts-container {
+    margin-top: 30px;
+}
+.chart-section {
+    margin-bottom: 40px;
+}
+.chart-section h3 {
+    text-align: center;
+}
+canvas {
+    max-width: 100%;
+    height: auto;
+}
+/* Style for the current date display */
+#currentDate {
+    font-size: 1.2em;
+    color: #555;
+    margin-bottom: 10px;
+}
+/* Styles for chart buttons */
+.chart-buttons {
+    text-align: center;
+    margin-top: 10px;
+}
+.chart-buttons button {
+    margin: 0 5px;
+    padding: 6px 12px;
+    font-size: 14px;
+}
+/* Styles for Dates Display */
+#weeklyDates {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 1em;
+    color: #555;
+}
+/* Style for the remove 'X' button */
+.remove-btn {
+    background-color: transparent;
+    border: none;
+    color: red;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 5px;
+}
+.remove-btn:hover {
+    color: darkred;
+}
+/* Styles for suggestions list */
+.suggestions-list {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #999;
+    max-height: 150px;
+    overflow-y: auto;
+    width: calc(100% - 2px); /* Adjust for border */
+    margin-top: 2px;
+    z-index: 10;
+    padding: 0;
+    list-style: none;
+}
+.suggestions-list li {
+    padding: 5px;
+    cursor: pointer;
+}
+.suggestions-list li:hover {
+    background-color: #f0f0f0;
+}
+/* Style for the input field in the cell */
+.team-member-input {
+    width: 100%;
+    box-sizing: border-box;
+}
+/* Add this to your CSS file or within a <style> tag */
+
+/* Style for the delete team member button */
+.delete-team-member-btn {
+    margin-left: 10px;
+    padding: 2px 5px;
+    font-size: 12px;
+    color: #fff;
+    background-color: #e74c3c; /* Red color */
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.delete-team-member-btn:hover {
+    background-color: #c0392b;
+}
+
+/* Adjust the layout for the team member name container */
+.team-member-name-container {
+    display: flex;
+    align-items: center;
+}
