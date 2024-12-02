@@ -4,11 +4,11 @@
 
 // Updated workstations array with the new order
 const workstations = [
-    "CS1", "CS2", "CS4", "CS5",
-    "Sequencing A", "Sequencing B",
-    "Kits 1", "Kits 2",
-    "Backboards 1", "Backboards 2",
-    "Hog 3", "Hog 4", "Hog 5"
+    "RFS", "1", "2", "3",
+    "4", "5",
+    "6", "7",
+    "8", "9",
+    "10", "Back 1", "Back 2"
 ];
 
 let teamMembers = [];
