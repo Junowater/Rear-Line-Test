@@ -8,7 +8,7 @@ const workstations = [
     "4", "5",
     "6", "7",
     "8", "9",
-    "10", "Back 1", "Back 2"
+    "10", "Hog 1", "Hog 2",   
 ];
 
 let teamMembers = [];
@@ -35,22 +35,22 @@ function initSchedule() {
 // Function to get default team members
 function getDefaultTeamMembers() {
     return [
-        { name: "George G", stations: ["Kits 1", "Kits 2", "Sequencing A", "Sequencing B", "CS1", "CS2", "CS4", "CS5", "Backboards 1", "Backboards 2", "Hog 3", "Hog 4"], partialStations: [], active: true, unavailableQuarters: [] },
-        { name: "Domingo R", stations: ["Kits 1", "Kits 2", "Sequencing A", "Sequencing B", "CS1", "CS2", "CS4", "CS5", "Backboards 1", "Backboards 2", "Hog 3"], partialStations: [], active: true, unavailableQuarters: [] },
-        { name: "Danny T", stations: ["Kits 1", "Sequencing B", "CS4", "CS5", "Backboards 1", "Backboards 2", "Hog 3", "Hog 4"], partialStations: [], active: true, unavailableQuarters: [] },
-        { name: "Mulu G", stations: ["Kits 1", "Kits 2", "Sequencing A", "Sequencing B", "CS1", "CS2", "CS4", "CS5", "Backboards 1", "Backboards 2", "Hog 3", "Hog 4", "Hog 5"], partialStations: [], active: true, unavailableQuarters: [] },
-        { name: "Makalyn B", stations: ["Kits 1", "Kits 2", "Sequencing A", "Sequencing B", "CS1", "CS2", "CS4", "CS5", "Backboards 1", "Backboards 2", "Hog 5"], partialStations: [], active: true, unavailableQuarters: [] },
-        { name: "Habtom T", stations: ["Kits 1", "Kits 2", "Sequencing A", "Sequencing B", "CS1", "CS2", "CS4", "CS5", "Backboards 1", "Backboards 2", "Hog 3", "Hog 4", "Hog 5"], partialStations: [], active: true, unavailableQuarters: [] },
-        { name: "Tyler B", stations: ["Kits 1", "Kits 2", "Sequencing A", "Sequencing B", "CS1", "CS2", "CS4", "CS5", "Backboards 1", "Backboards 2", "Hog 3", "Hog 4", "Hog 5"], partialStations: [], active: true, unavailableQuarters: [] },
-        { name: "Young L", stations: ["Kits 1", "Kits 2", "Sequencing A", "Sequencing B", "CS1", "CS2", "CS4", "CS5", "Backboards 1", "Backboards 2", "Hog 3", "Hog 4"], partialStations: [], active: true, unavailableQuarters: [] },
-        { name: "Joshua A", stations: ["Kits 1", "Sequencing B", "CS2", "CS4", "CS5", "Backboards 1", "Hog 3", "Hog 5"], partialStations: [], active: true, unavailableQuarters: [] },
-        { name: "Aaron S", stations: ["Kits 1", "Kits 2", "Sequencing A", "Sequencing B", "CS1", "CS2", "CS4", "CS5", "Backboards 1", "Backboards 2", "Hog 3", "Hog 4"], partialStations: [], active: true, unavailableQuarters: [] },
-        { name: "Ronette E", stations: ["Kits 1", "Kits 2", "Sequencing A", "Sequencing B", "CS1", "CS2", "CS4", "CS5", "Backboards 1", "Backboards 2", "Hog 3", "Hog 4"], partialStations: [], active: true, unavailableQuarters: [] },
-        { name: "Rikki E", stations: ["Kits 2", "CS4", "CS5", "Hog 3", "Hog 4"], partialStations: [], active: true, unavailableQuarters: [] },
-        { name: "Nataliia S", stations: ["Kits 1", "Kits 2", "Sequencing A", "Sequencing B", "CS1", "CS2", "CS4", "CS5", "Backboards 1", "Backboards 2", "Hog 5"], partialStations: [], active: true, unavailableQuarters: [] },
-        { name: "Reynard R", stations: ["Kits 1", "Kits 2", "Sequencing A", "Sequencing B", "CS1", "CS2", "CS4", "CS5", "Backboards 1", "Backboards 2", "Hog 3", "Hog 4"], partialStations: [], active: true, unavailableQuarters: [] },
-        { name: "Sayyed E", stations: ["Kits 1", "Sequencing B", "CS1", "CS5", "Backboards 1", "Backboards 2", "Hog 5"], partialStations: [], active: true, unavailableQuarters: [] },
-        { name: "Joy R", stations: ["Kits 2", "Sequencing A", "CS1", "CS4", "CS5", "Backboards 1", "Backboards 2", "Hog 4"], partialStations: [], active: true, unavailableQuarters: [] },
+        { name: "Gustavo G", stations: ["RFS", "3", "5", "6", "9", "10", "Hog 1", "Hog 2"], partialStations: [], active: true, unavailableQuarters: [] },
+        { name: "Yosief M", stations: ["1", "2", "5", "7", "8", "9", "10", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+{ name: "Finan A", stations: ["RFS", "4", "5", "6", "8", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+{ name: "Muhammad A", stations: ["2", "6", "8", "9", "10" "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+{ name: "Netnal S", stations: ["RFS", "2", "4", "5", "7", "8", "10", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+{ name: "Raju K", stations: ["3", "4", "5", "6", "8", "9", "10", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+{ name: "Merhawy F", stations: ["RFS", "1", "3", "5", "6", "8", "9", "10"] partialStations: [], active: true, unavailableQuarters: [] },
+{ name: "Abiel H", stations: ["RFS", "1", "2", "7", "8", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+{ name: "Phaudi G", stations: ["RFS", "1", "3", "4", "5", "6", "7", "8", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+{ name: "Mohammad F", stations: ["RFS", "1", "7", "8", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+{ name: "Surinder P", stations: ["RFS", "4", "5", "7", "8", "9", "10"] partialStations: [], active: true, unavailableQuarters: [] },
+{ name: "Juliana J", stations: ["1", "3", "8", "9", "10", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+{ name: "Musie A", stations: ["1", "3", "6", "7", "8", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+{ name: "Hamidreza G", stations: ["RFS", "2", "4", "5", "7", "8", "9", "10", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+{ name: "Daria S", stations: ["2", "3", "5", "8", "10", "Hog 1", "Hog 2"] partialStations: [], active: true, unavailableQuarters: [] },
+                        
     ];
 }
 
