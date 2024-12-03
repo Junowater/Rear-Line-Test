@@ -45,29 +45,22 @@
             <div id="unassignedContent">All team members are assigned in all quarters.</div>
         </section>
 
-        <!-- Constraints Section -->
-        <section id="constraints">
-            <h3>Rotation Creation Constraints</h3>
-            <div id="constraintsList">
-                <!-- Constraints will be listed here -->
-            </div>
-            <!-- Add Constraint Form -->
-            <div id="addConstraintForm">
-                <h4>Add New Constraint</h4>
-                <label for="constraintTypeSelect">Constraint Type:</label>
-                <select id="constraintTypeSelect">
-                    <option value="csOncePerDay">Team member can only work on CS1 or CS2 once per day</option>
-                    <option value="noBackboardsAfterCS1">Team member cannot work on Backboards after CS1</option>
-                    <option value="noHogBackToBack">Cannot work on Hog stations back to back</option>
-                    <option value="noSequencingBackToBack">Cannot work on Sequencing stations back to back</option>
-                    <option value="backboardsOncePerDay">Team member can only work on Backboards 1 or Backboards 2 once per day</option>
-                    <option value="noSameStationTwice">Team member cannot be assigned to the same station twice</option>
-                    <option value="noSequencingKitsBackToBack">Team member cannot work on Sequencing A, Sequencing B, or Kits 1 back to back</option>
-                </select>
-                <input type="text" id="constraintDescriptionInput" placeholder="Constraint Description" />
-                <button type="button" id="addConstraintBtn">Add Constraint</button>
-            </div>
-        </section>
+       <!-- Constraint Management Section -->
+<div id="constraintManagement">
+    <h2>Constraints</h2>
+    <div id="constraintsList"></div>
+    <select id="constraintTypeSelect" onchange="updateConstraintParameterInputs()">
+        <option value="">Select Constraint Type</option>
+        <option value="noBackToBackStations">Team members cannot do (station1) and (station2) back to back</option>
+        <option value="maxOneOfTwoStationsPerDay">Team members can only work on (station) or (station) once per day</option>
+        <option value="noBackToBackThreeStations">Team members cannot work on (station), (station), or (station) back to back</option>
+        <option value="noSameStationTwice">Team members cannot be assigned to the same station twice</option>
+    </select>
+    <div id="constraintParameters"></div>
+    <button id="addConstraintBtn">Add Constraint</button>
+</div>
+
+
 
         <!-- Team Member Skills Section -->
         <section id="teamMemberSkills">
@@ -114,5 +107,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Link to External JavaScript -->
     <script src="js/scripts.js"></script>
+    <script src="https://unpkg.com/js-constraint/dist/js-constraint.min.js"></script>
+    <button id="solveWithCPBtn">Solve Schedule with CP</button>
+
 </body>
 </html>
