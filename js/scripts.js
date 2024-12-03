@@ -13,12 +13,10 @@ const workstations = [
 
 let teamMembers = [];
 
-// Constraints Data Structure
 let constraints = [];
 
-// Global Variables
 const quarters = ["Quarter 1", "Quarter 2", "Quarter 3", "Quarter 4", "Quarter 5"];
-let schedule = {}; // {quarter: {workstation: [{name: teamMemberName, lockState: 'none'|'locked'|'training'}]}}
+let schedule = {};
 
 // Initialize Schedule
 function initSchedule() {
@@ -74,34 +72,17 @@ function loadData() {
 
     // Default constraints
     const defaultConstraints = [
-        { id: 'noHogBackToBack', description: 'Cannot work on Hog stations back to back', enabled: true, type: 'noHogBackToBack' },
-        { id: 'HogOncePerDay', description: 'Team member can only work on Hog 1 or Hog 2 once per day', enabled: true, type: 'HogOncePerDay' },
-        { id: 'noSameStationTwice', description: 'Team member cannot be assigned to the same station twice', enabled: true, type: 'noSameStationTwice' },
-        { id: 'noRFS1BackToBack', description: 'Team member cannot work on RFS or 1 back to back', enabled: true, type: 'noRFS1BackToBack' }
+        { id: 'noSameStationTwice', description: 'Team members cannot be assigned to the same station twice', enabled: true, type: 'noSameStationTwice', parameters: {} }
     ];
 
     let savedConstraints = localStorage.getItem("constraints");
     if (savedConstraints) {
         try {
-            let savedConstraintsArray = JSON.parse(savedConstraints);
-            constraints = [];
-
-            // Merge default constraints with saved constraints
-            defaultConstraints.forEach(defaultConstraint => {
-                let savedConstraint = savedConstraintsArray.find(c => c.id === defaultConstraint.id);
-                if (savedConstraint) {
-                    // Use saved enabled status
-                    defaultConstraint.enabled = savedConstraint.enabled;
-                }
-                constraints.push(defaultConstraint);
-            });
-
-            // Add any additional saved constraints that are not in defaults
-            savedConstraintsArray.forEach(savedConstraint => {
-                if (!constraints.some(c => c.id === savedConstraint.id)) {
-                    constraints.push(savedConstraint);
-                }
-            });
+            constraints = JSON.parse(savedConstraints);
+            // If no constraints are saved, use default constraints
+            if (!Array.isArray(constraints) || constraints.length === 0) {
+                constraints = defaultConstraints;
+            }
         } catch (e) {
             // If JSON parsing fails, use default constraints
             constraints = defaultConstraints;
@@ -168,39 +149,195 @@ function deleteConstraint(id) {
     saveData(false); // Save changes without alert
 }
 
+// Update Constraint Parameter Inputs
+function updateConstraintParameterInputs() {
+    const constraintTypeSelect = document.getElementById("constraintTypeSelect");
+    const selectedType = constraintTypeSelect.value;
+    const parametersDiv = document.getElementById("constraintParameters");
+    parametersDiv.innerHTML = ''; // Clear previous parameters
+
+    if (selectedType === 'noBackToBackStations') {
+        // Create inputs for station1 and station2
+        parametersDiv.innerHTML = `
+            <label>Station 1:</label>
+            <select id="station1Select">
+                ${workstations.map(ws => `<option value="${ws}">${ws}</option>`).join('')}
+            </select>
+            <label>Station 2:</label>
+            <select id="station2Select">
+                ${workstations.map(ws => `<option value="${ws}">${ws}</option>`).join('')}
+            </select>
+        `;
+    } else if (selectedType === 'maxOneOfTwoStationsPerDay') {
+        // Create inputs for station1 and station2
+        parametersDiv.innerHTML = `
+            <label>Station 1:</label>
+            <select id="station1Select">
+                ${workstations.map(ws => `<option value="${ws}">${ws}</option>`).join('')}
+            </select>
+            <label>Station 2:</label>
+            <select id="station2Select">
+                ${workstations.map(ws => `<option value="${ws}">${ws}</option>`).join('')}
+            </select>
+        `;
+    } else if (selectedType === 'noBackToBackThreeStations') {
+        // Create inputs for station1, station2, and station3
+        parametersDiv.innerHTML = `
+            <label>Station 1:</label>
+            <select id="station1Select">
+                ${workstations.map(ws => `<option value="${ws}">${ws}</option>`).join('')}
+            </select>
+            <label>Station 2:</label>
+            <select id="station2Select">
+                ${workstations.map(ws => `<option value="${ws}">${ws}</option>`).join('')}
+            </select>
+            <label>Station 3:</label>
+            <select id="station3Select">
+                ${workstations.map(ws => `<option value="${ws}">${ws}</option>`).join('')}
+            </select>
+        `;
+    } else if (selectedType === 'noSameStationTwice') {
+        // No parameters needed
+        parametersDiv.innerHTML = '';
+    }
+}
+
 // Add New Constraint
 function addConstraint() {
     const constraintTypeSelect = document.getElementById("constraintTypeSelect");
-    const constraintDescriptionInput = document.getElementById("constraintDescriptionInput");
-
     const selectedType = constraintTypeSelect.value;
-    const description = constraintDescriptionInput.value.trim();
 
-    if (description === "") {
-        alert("Please enter a description for the new constraint.");
+    if (!selectedType) {
+        alert("Please select a constraint type.");
         return;
     }
 
-    // Check if constraint already exists
-    if (constraints.some(constraint => constraint.description === description)) {
-        alert("A constraint with this description already exists.");
+    let description = '';
+    let parameters = {};
+
+    if (selectedType === 'noBackToBackStations') {
+        const station1Select = document.getElementById("station1Select");
+        const station2Select = document.getElementById("station2Select");
+        const station1 = station1Select.value;
+        const station2 = station2Select.value;
+
+        if (!station1 || !station2) {
+            alert("Please select both stations.");
+            return;
+        }
+
+        parameters = { station1, station2 };
+        description = `Team members cannot do ${station1} and ${station2} back to back`;
+
+    } else if (selectedType === 'maxOneOfTwoStationsPerDay') {
+        const station1Select = document.getElementById("station1Select");
+        const station2Select = document.getElementById("station2Select");
+        const station1 = station1Select.value;
+        const station2 = station2Select.value;
+
+        if (!station1 || !station2) {
+            alert("Please select both stations.");
+            return;
+        }
+
+        parameters = { station1, station2 };
+        description = `Team members can only work on ${station1} or ${station2} once per day`;
+
+    } else if (selectedType === 'noBackToBackThreeStations') {
+        const station1Select = document.getElementById("station1Select");
+        const station2Select = document.getElementById("station2Select");
+        const station3Select = document.getElementById("station3Select");
+        const station1 = station1Select.value;
+        const station2 = station2Select.value;
+        const station3 = station3Select.value;
+
+        if (!station1 || !station2 || !station3) {
+            alert("Please select all three stations.");
+            return;
+        }
+
+        parameters = { stations: [station1, station2, station3] };
+        description = `Team members cannot work on ${station1}, ${station2}, or ${station3} back to back`;
+
+    } else if (selectedType === 'noSameStationTwice') {
+        description = 'Team members cannot be assigned to the same station twice';
+        parameters = {};
+    } else {
+        alert("Invalid constraint type selected.");
+        return;
+    }
+
+    // Generate a unique id for the constraint
+    const id = selectedType + "_" + Date.now();
+
+    // Check if constraint already exists with same parameters
+    if (constraints.some(c => c.type === selectedType && JSON.stringify(c.parameters) === JSON.stringify(parameters))) {
+        alert("This constraint already exists.");
         return;
     }
 
     // Add new constraint
     constraints.push({
-        id: selectedType + "_" + Date.now(),
+        id: id,
         description: description,
         enabled: true,
-        type: selectedType
+        type: selectedType,
+        parameters: parameters
     });
-
-    // Clear input fields
-    constraintDescriptionInput.value = "";
 
     // Regenerate constraints list
     generateConstraintsList();
     saveData(false); // Save changes without alert
+
+    // Clear the parameter inputs
+    document.getElementById("constraintParameters").innerHTML = '';
+    constraintTypeSelect.value = ''; // Reset the select
+}
+
+// Generate Skills Table
+function generateSkillsTable() {
+    const table = document.getElementById("skillsTable");
+    table.innerHTML = "";
+
+    // Header Row
+    let headerRow = "<tr><th>Team Member</th>";
+    workstations.forEach(ws => {
+        headerRow += `<th>${ws}</th>`;
+    });
+    headerRow += "</tr>";
+    table.innerHTML += headerRow;
+
+    // Data Rows
+    teamMembers.forEach(tm => {
+        let row = `<tr>`;
+        // Team member name with quarter availability dots and delete button
+        row += `<td>`;
+        // Team member name clickable to toggle overall active status
+        row += `<div class="team-member-name-container">`;
+        row += `<span onclick="toggleTeamMemberActive('${tm.name}', this)" class="${tm.active ? '' : 'inactive'}">${tm.name}</span>`;
+        // Delete button
+        row += `<button class="delete-team-member-btn" onclick="deleteTeamMember('${tm.name}')">Delete</button>`;
+        row += `</div>`;
+        // Quarter availability dots
+        row += `<div class="dot-container">`;
+        quarters.forEach(q => {
+            let isActive = !tm.unavailableQuarters.includes(q);
+            row += `<span class="quarter-dot ${isActive ? 'active' : 'inactive'}" onclick="toggleQuarterAvailability('${tm.name}', '${q}', this)" title="${q}"></span>`;
+        });
+        row += `</div>`;
+        row += `</td>`;
+
+        workstations.forEach(ws => {
+            let canDo = tm.stations.includes(ws);
+            let partialCanDo = tm.partialStations.includes(ws);
+            row += `<td>
+                <span class="dot ${canDo ? 'black-dot' : 'white-dot'}" onclick="toggleSkill('${tm.name}', '${ws}', this)" title="Full Skill"></span>
+                <span class="dot ${partialCanDo ? 'yellow-dot' : 'white-dot'}" onclick="togglePartialSkill('${tm.name}', '${ws}', this)" title="Partial Skill"></span>
+            </td>`;
+        });
+        row += "</tr>";
+        table.innerHTML += row;
+    });
 }
 
 // Generate Schedule Table
@@ -422,98 +559,6 @@ function generateTeamMemberPool() {
     });
 }
 
-// Generate Skills Table
-function generateSkillsTable() {
-    const table = document.getElementById("skillsTable");
-    table.innerHTML = "";
-
-    // Header Row
-    let headerRow = "<tr><th>Team Member</th>";
-    workstations.forEach(ws => {
-        headerRow += `<th>${ws}</th>`;
-    });
-    headerRow += "</tr>";
-    table.innerHTML += headerRow;
-
-    // Data Rows
-    teamMembers.forEach(tm => {
-        let row = `<tr>`;
-        // Team member name with quarter availability dots and delete button
-        row += `<td>`;
-        // Team member name clickable to toggle overall active status
-        row += `<div class="team-member-name-container">`;
-        row += `<span onclick="toggleTeamMemberActive('${tm.name}', this)" class="${tm.active ? '' : 'inactive'}">${tm.name}</span>`;
-        // Delete button
-        row += `<button class="delete-team-member-btn" onclick="deleteTeamMember('${tm.name}')">Delete</button>`;
-        row += `</div>`;
-        // Quarter availability dots
-        row += `<div class="dot-container">`;
-        quarters.forEach(q => {
-            let isActive = !tm.unavailableQuarters.includes(q);
-            row += `<span class="quarter-dot ${isActive ? 'active' : 'inactive'}" onclick="toggleQuarterAvailability('${tm.name}', '${q}', this)" title="${q}"></span>`;
-        });
-        row += `</div>`;
-        row += `</td>`;
-
-        workstations.forEach(ws => {
-            let canDo = tm.stations.includes(ws);
-            let partialCanDo = tm.partialStations.includes(ws);
-            row += `<td>
-                <span class="dot ${canDo ? 'black-dot' : 'white-dot'}" onclick="toggleSkill('${tm.name}', '${ws}', this)" title="Full Skill"></span>
-                <span class="dot ${partialCanDo ? 'yellow-dot' : 'white-dot'}" onclick="togglePartialSkill('${tm.name}', '${ws}', this)" title="Partial Skill"></span>
-            </td>`;
-        });
-        row += "</tr>";
-        table.innerHTML += row;
-    });
-}
-
-// Delete Team Member
-function deleteTeamMember(name) {
-    if (confirm(`Are you sure you want to delete ${name}? This action cannot be undone.`)) {
-        // Remove team member from teamMembers array
-        teamMembers = teamMembers.filter(tm => tm.name !== name);
-
-        // Remove team member from the schedule
-        quarters.forEach(q => {
-            workstations.forEach(ws => {
-                schedule[q][ws] = schedule[q][ws].filter(a => a.name !== name);
-            });
-        });
-
-        // Save data
-        saveData(false); // Pass false to prevent alert
-
-        // Regenerate tables and charts
-        generateSkillsTable();
-        generateScheduleTable();
-        updateUnassignedBox();
-        renderSnapshotChart(schedule);
-
-        // Update saved rotations (weekly chart)
-        let savedRotations = localStorage.getItem("savedRotations");
-        if (savedRotations) {
-            savedRotations = JSON.parse(savedRotations);
-            // Remove the team member from all saved rotations
-            savedRotations.forEach(rotation => {
-                let rotationSchedule = rotation.schedule;
-                quarters.forEach(q => {
-                    workstations.forEach(ws => {
-                        rotationSchedule[q][ws] = rotationSchedule[q][ws].filter(a => a.name !== name);
-                    });
-                });
-            });
-            // Save updated rotations
-            localStorage.setItem("savedRotations", JSON.stringify(savedRotations));
-            // Re-render weekly chart
-            renderWeeklyChart(savedRotations);
-        }
-
-        // Update team member pool
-        generateTeamMemberPool();
-    }
-}
-
 // Toggle Quarter Availability
 function toggleQuarterAvailability(name, quarter, element) {
     let tm = teamMembers.find(tm => tm.name === name);
@@ -618,6 +663,52 @@ function regenerateScheduleAfterSkillChange() {
     });
     generateScheduleTable();
     updateUnassignedBox();
+}
+
+// Delete Team Member
+function deleteTeamMember(name) {
+    if (confirm(`Are you sure you want to delete ${name}? This action cannot be undone.`)) {
+        // Remove team member from teamMembers array
+        teamMembers = teamMembers.filter(tm => tm.name !== name);
+
+        // Remove team member from the schedule
+        quarters.forEach(q => {
+            workstations.forEach(ws => {
+                schedule[q][ws] = schedule[q][ws].filter(a => a.name !== name);
+            });
+        });
+
+        // Save data
+        saveData(false); // Pass false to prevent alert
+
+        // Regenerate tables and charts
+        generateSkillsTable();
+        generateScheduleTable();
+        updateUnassignedBox();
+        renderSnapshotChart(schedule);
+
+        // Update saved rotations (weekly chart)
+        let savedRotations = localStorage.getItem("savedRotations");
+        if (savedRotations) {
+            savedRotations = JSON.parse(savedRotations);
+            // Remove the team member from all saved rotations
+            savedRotations.forEach(rotation => {
+                let rotationSchedule = rotation.schedule;
+                quarters.forEach(q => {
+                    workstations.forEach(ws => {
+                        rotationSchedule[q][ws] = rotationSchedule[q][ws].filter(a => a.name !== name);
+                    });
+                });
+            });
+            // Save updated rotations
+            localStorage.setItem("savedRotations", JSON.stringify(savedRotations));
+            // Re-render weekly chart
+            renderWeeklyChart(savedRotations);
+        }
+
+        // Update team member pool
+        generateTeamMemberPool();
+    }
 }
 
 // Add New Team Member
@@ -1027,7 +1118,6 @@ function assignWorkstationsEnhanced(index, teamMemberAssignments, startTime, max
 
 // Check if the assignment is valid based on constraints
 function isValidAssignment(tm, quarterIndex, workstation, teamMemberAssignments) {
-    // Iterate over constraints
     for (let constraint of constraints) {
         if (constraint.enabled) {
             switch (constraint.type) {
@@ -1036,20 +1126,23 @@ function isValidAssignment(tm, quarterIndex, workstation, teamMemberAssignments)
                         return false;
                     }
                     break;
-                case 'HogOncePerDay':
-                    if (wsIsHog1or2(workstation) && teamMemberAssignments[tm.name].Hog1or2AssignedToday) {
+                case 'noBackToBackStations':
+                    const prevWs = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
+                    if (prevWs === constraint.parameters.station1 && workstation === constraint.parameters.station2) {
                         return false;
                     }
                     break;
-                case 'noHogBackToBack':
-                    let prevWsHog = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
-                    if (prevWsHog && wsIsHog(prevWsHog) && wsIsHog(workstation)) {
-                        return false;
+                case 'maxOneOfTwoStationsPerDay':
+                    const assignedStations1 = teamMemberAssignments[tm.name].assignedWorkstations;
+                    if (assignedStations1.includes(constraint.parameters.station1) || assignedStations1.includes(constraint.parameters.station2)) {
+                        if (workstation === constraint.parameters.station1 || workstation === constraint.parameters.station2) {
+                            return false;
+                        }
                     }
                     break;
-                case 'noRFS1BackToBack':
-                    let prevWsRFS1 = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
-                    if (prevWsRFS1 && wsIsRFS1(prevWsRFS1) && wsIsRFS1(workstation)) {
+                case 'noBackToBackThreeStations':
+                    const prevWsThree = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
+                    if (constraint.parameters.stations.includes(prevWsThree) && constraint.parameters.stations.includes(workstation)) {
                         return false;
                     }
                     break;
@@ -1331,7 +1424,6 @@ document.getElementById("addConstraintBtn").addEventListener("click", addConstra
 document.getElementById("addTeamMemberBtn").addEventListener("click", addTeamMember);
 document.getElementById("saveChangesBtn").addEventListener("click", saveData);
 
-// Updated Event Listeners for Chart Buttons
 // Snapshot Chart Buttons
 document.getElementById("snapshotHideAllBtn").addEventListener("click", function() {
     toggleAllDatasets(window.snapshotChartInstance, false);
@@ -1777,20 +1869,23 @@ function isValidAssignmentPrioritizeNewStation(tm, quarterIndex, workstation, te
                         return false;
                     }
                     break;
-                case 'HogOncePerDay':
-                    if (wsIsHog1or2(workstation) && teamMemberAssignments[tm.name].Hog1or2AssignedToday) {
+                case 'noBackToBackStations':
+                    const prevWs = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
+                    if (prevWs === constraint.parameters.station1 && workstation === constraint.parameters.station2) {
                         return false;
                     }
                     break;
-                case 'noHogBackToBack':
-                    let prevWsHog = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
-                    if (prevWsHog && wsIsHog(prevWsHog) && wsIsHog(workstation)) {
-                        return false;
+                case 'maxOneOfTwoStationsPerDay':
+                    const assignedStations1 = teamMemberAssignments[tm.name].assignedWorkstations;
+                    if (assignedStations1.includes(constraint.parameters.station1) || assignedStations1.includes(constraint.parameters.station2)) {
+                        if (workstation === constraint.parameters.station1 || workstation === constraint.parameters.station2) {
+                            return false;
+                        }
                     }
                     break;
-                case 'noRFS1BackToBack':
-                    let prevWsRFS1 = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
-                    if (prevWsRFS1 && wsIsRFS1(prevWsRFS1) && wsIsRFS1(workstation)) {
+                case 'noBackToBackThreeStations':
+                    const prevWsThree = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
+                    if (constraint.parameters.stations.includes(prevWsThree) && constraint.parameters.stations.includes(workstation)) {
                         return false;
                     }
                     break;
