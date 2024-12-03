@@ -2,13 +2,13 @@
 
 // Data Structures
 
-// Updated workstations array with the new order
+// Workstations array
 const workstations = [
     "RFS", "1", "2", "3",
     "4", "5",
     "6", "7",
     "8", "9",
-    "10", "Hog 1", "Hog 2",   
+    "10", "Hog 1", "Hog 2",
 ];
 
 let teamMembers = [];
@@ -74,12 +74,10 @@ function loadData() {
 
     // Default constraints
     const defaultConstraints = [
-        
         { id: 'noHogBackToBack', description: 'Cannot work on Hog stations back to back', enabled: true, type: 'noHogBackToBack' },
-        
-        { id: 'backboardsOncePerDay', description: 'Team member can only work on Hog 1 or Hog 2 once per day', enabled: true, type: 'HogOncePerDay' },
+        { id: 'HogOncePerDay', description: 'Team member can only work on Hog 1 or Hog 2 once per day', enabled: true, type: 'HogOncePerDay' },
         { id: 'noSameStationTwice', description: 'Team member cannot be assigned to the same station twice', enabled: true, type: 'noSameStationTwice' },
-        { id: 'noSequencingKitsBackToBack', description: 'Team member cannot work on RFS or 1 back to back', enabled: true, type: 'noRFS1BackToBack' }
+        { id: 'noRFS1BackToBack', description: 'Team member cannot work on RFS or 1 back to back', enabled: true, type: 'noRFS1BackToBack' }
     ];
 
     let savedConstraints = localStorage.getItem("constraints");
@@ -808,7 +806,7 @@ function drop(ev) {
 
     // Remove from previous assignment if not from pool
     if (!fromPool) {
-        if (sourceQuarter && sourceWorkstation && schedule[sourceQuarter] && schedule[sourceQuarter][sourceWorkstation]) {
+        if (sourceQuarter && sourceWorkstation && schedule[sourceQuarter][sourceWorkstation]) {
             schedule[sourceQuarter][sourceWorkstation] = schedule[sourceQuarter][sourceWorkstation].filter(a => a.name !== name);
         }
     }
@@ -850,8 +848,7 @@ function rotateAssignments() {
         teamMemberAssignments[tm.name] = {
             assignments: Array(quarters.length).fill(null),
             assignedWorkstations: [],
-            csAssigned: false,
-            backboardsAssigned: false
+            Hog1or2AssignedToday: false
         };
     });
 
@@ -865,11 +862,8 @@ function rotateAssignments() {
                 if (lockState === 'locked' || lockState === 'training') {
                     teamMemberAssignments[name].assignments[qIdx] = ws;
                     teamMemberAssignments[name].assignedWorkstations.push(ws);
-                    if (wsIsCS(ws)) {
-                        teamMemberAssignments[name].csAssigned = true;
-                    }
-                    if (wsIsBackboards(ws)) {
-                        teamMemberAssignments[name].backboardsAssigned = true;
+                    if (wsIsHog1or2(ws)) {
+                        teamMemberAssignments[name].Hog1or2AssignedToday = true;
                     }
                 }
             });
@@ -1005,15 +999,11 @@ function assignWorkstationsEnhanced(index, teamMemberAssignments, startTime, max
         teamMemberAssignments[tm.name].assignments[selectedQuarterIndex] = workstation;
 
         // Save previous states to restore on backtrack
-        let csAssignedBefore = teamMemberAssignments[tm.name].csAssigned;
-        let backboardsAssignedBefore = teamMemberAssignments[tm.name].backboardsAssigned;
+        let Hog1or2AssignedBefore = teamMemberAssignments[tm.name].Hog1or2AssignedToday;
 
-        if (wsIsCS(workstation)) {
-            teamMemberAssignments[tm.name].csAssigned = true;
-        }
-
-        if (wsIsBackboards(workstation)) {
-            teamMemberAssignments[tm.name].backboardsAssigned = true;
+        // Update Hog1or2AssignedToday if assigned to Hog 1 or Hog 2
+        if (wsIsHog1or2(workstation)) {
+            teamMemberAssignments[tm.name].Hog1or2AssignedToday = true;
         }
 
         // Add workstation to assignedWorkstations for same station constraint
@@ -1027,8 +1017,7 @@ function assignWorkstationsEnhanced(index, teamMemberAssignments, startTime, max
         // Backtrack
         schedule[quarter][workstation] = schedule[quarter][workstation].filter(a => a.name !== tm.name);
         teamMemberAssignments[tm.name].assignments[selectedQuarterIndex] = null;
-        teamMemberAssignments[tm.name].csAssigned = csAssignedBefore;
-        teamMemberAssignments[tm.name].backboardsAssigned = backboardsAssignedBefore;
+        teamMemberAssignments[tm.name].Hog1or2AssignedToday = Hog1or2AssignedBefore;
         teamMemberAssignments[tm.name].assignedWorkstations.pop();
     }
 
@@ -1048,17 +1037,19 @@ function isValidAssignment(tm, quarterIndex, workstation, teamMemberAssignments)
                     }
                     break;
                 case 'HogOncePerDay':
-                    if (wsHog(workstation) && teamMemberAssignments[tm.name].HogAssigned) {
+                    if (wsIsHog1or2(workstation) && teamMemberAssignments[tm.name].Hog1or2AssignedToday) {
+                        return false;
+                    }
+                    break;
+                case 'noHogBackToBack':
+                    let prevWsHog = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
+                    if (prevWsHog && wsIsHog(prevWsHog) && wsIsHog(workstation)) {
                         return false;
                     }
                     break;
                 case 'noRFS1BackToBack':
-                    let prevWsSeqKit = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
-                    if (
-                        prevWsSeqKit &&
-                        ['RFS', '1'].includes(prevWsSeqKit) &&
-                        ['RFS', '1',].includes(workstation)
-                    ) {
+                    let prevWsRFS1 = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
+                    if (prevWsRFS1 && wsIsRFS1(prevWsRFS1) && wsIsRFS1(workstation)) {
                         return false;
                     }
                     break;
@@ -1074,20 +1065,16 @@ function isValidAssignment(tm, quarterIndex, workstation, teamMemberAssignments)
 }
 
 // Helper functions to check workstation types
-function wsIsCS(ws) {
-    return ws === "CS1" || ws === "CS2";
-}
-
-function wsIsBackboards(ws) {
-    return ws === "Backboards 1" || ws === "Backboards 2";
-}
-
 function wsIsHog(ws) {
-    return ["Hog 3", "Hog 4", "Hog 5"].includes(ws);
+    return ws.startsWith("Hog");
 }
 
-function wsIsSequencing(ws) {
-    return ["Sequencing A", "Sequencing B"].includes(ws);
+function wsIsHog1or2(ws) {
+    return ws === "Hog 1" || ws === "Hog 2";
+}
+
+function wsIsRFS1(ws) {
+    return ws === "RFS" || ws === "1";
 }
 
 // Helper function to shuffle an array
@@ -1223,7 +1210,7 @@ function renderWeeklyChart(savedRotations) {
     // Get the last 7 days' rotations
     const last7Rotations = savedRotations.slice(-7);
 
-    // New code: Collect dates of the rotations
+    // Collect dates of the rotations
     const rotationDates = last7Rotations.map(rotation => rotation.date);
 
     // Aggregate data: team member -> station -> count
@@ -1294,7 +1281,7 @@ function renderWeeklyChart(savedRotations) {
         }
     });
 
-    // New code: Display the dates below the chart
+    // Display the dates below the chart
     datesDiv.innerHTML = `<p>Dates included in this chart: ${rotationDates.join(', ')}</p>`;
 }
 
@@ -1315,6 +1302,15 @@ function generateColorArray(numColors) {
         colors.push(`hsl(${hue}, 70%, 50%)`);
     }
     return colors;
+}
+
+// Function to toggle all datasets in a chart
+function toggleAllDatasets(chartInstance, show) {
+    chartInstance.data.datasets.forEach(function(dataset, index) {
+        // Set the hidden property in the dataset's meta
+        chartInstance.getDatasetMeta(index).hidden = !show;
+    });
+    chartInstance.update();
 }
 
 // Function to display the current date
@@ -1355,15 +1351,6 @@ document.getElementById("weeklyShowAllBtn").addEventListener("click", function()
 // Event Listener for Reset Week Button
 document.getElementById("resetWeekBtn").addEventListener("click", resetWeeklyData);
 
-// Function to toggle all datasets in a chart
-function toggleAllDatasets(chartInstance, show) {
-    chartInstance.data.datasets.forEach(function(dataset, index) {
-        // Set the hidden property in the dataset's meta
-        chartInstance.getDatasetMeta(index).hidden = !show;
-    });
-    chartInstance.update();
-}
-
 // On Page Load, initialize data and generate the schedule and charts
 window.onload = function() {
     // Load data
@@ -1403,7 +1390,7 @@ window.onload = function() {
 
     // Display the current date
     displayCurrentDate();
-};
+}
 
 // Rotate Quarter with Constraints
 function rotateQuarter(q) {
@@ -1415,8 +1402,7 @@ function rotateQuarter(q) {
         teamMemberAssignments[tm.name] = {
             assignments: Array(quarters.length).fill(null),
             assignedWorkstations: [],
-            csAssigned: false,
-            backboardsAssigned: false
+            Hog1or2AssignedToday: false
         };
     });
 
@@ -1431,11 +1417,8 @@ function rotateQuarter(q) {
                 if (quarterName !== q || lockState === 'locked' || lockState === 'training') {
                     teamMemberAssignments[name].assignments[qIdx] = ws;
                     teamMemberAssignments[name].assignedWorkstations.push(ws);
-                    if (wsIsCS(ws)) {
-                        teamMemberAssignments[name].csAssigned = true;
-                    }
-                    if (wsIsBackboards(ws)) {
-                        teamMemberAssignments[name].backboardsAssigned = true;
+                    if (wsIsHog1or2(ws)) {
+                        teamMemberAssignments[name].Hog1or2AssignedToday = true;
                     }
                 }
             });
@@ -1516,15 +1499,11 @@ function assignWorkstationsForQuarterEnhanced(wsIndex, quarterIndex, teamMemberA
         teamMemberAssignments[tm.name].assignments[quarterIndex] = workstation;
 
         // Save previous states to restore on backtrack
-        let csAssignedBefore = teamMemberAssignments[tm.name].csAssigned;
-        let backboardsAssignedBefore = teamMemberAssignments[tm.name].backboardsAssigned;
+        let Hog1or2AssignedBefore = teamMemberAssignments[tm.name].Hog1or2AssignedToday;
 
-        if (wsIsCS(workstation)) {
-            teamMemberAssignments[tm.name].csAssigned = true;
-        }
-
-        if (wsIsBackboards(workstation)) {
-            teamMemberAssignments[tm.name].backboardsAssigned = true;
+        // Update Hog1or2AssignedToday if assigned to Hog 1 or Hog 2
+        if (wsIsHog1or2(workstation)) {
+            teamMemberAssignments[tm.name].Hog1or2AssignedToday = true;
         }
 
         // Add workstation to assignedWorkstations for same station constraint
@@ -1538,8 +1517,7 @@ function assignWorkstationsForQuarterEnhanced(wsIndex, quarterIndex, teamMemberA
         // Backtrack
         schedule[quarter][workstation] = schedule[quarter][workstation].filter(a => a.name !== tm.name);
         teamMemberAssignments[tm.name].assignments[quarterIndex] = null;
-        teamMemberAssignments[tm.name].csAssigned = csAssignedBefore;
-        teamMemberAssignments[tm.name].backboardsAssigned = backboardsAssignedBefore;
+        teamMemberAssignments[tm.name].Hog1or2AssignedToday = Hog1or2AssignedBefore;
         teamMemberAssignments[tm.name].assignedWorkstations.pop();
     }
 
@@ -1595,8 +1573,7 @@ function rotateAssignmentsPrioritizeNewStation() {
         teamMemberAssignments[tm.name] = {
             assignments: Array(quarters.length).fill(null),
             assignedWorkstations: [],
-            csAssigned: false,
-            backboardsAssigned: false,
+            Hog1or2AssignedToday: false,
             previousStations: [],
         };
         // Collect previous day's assignments for each team member
@@ -1619,11 +1596,8 @@ function rotateAssignmentsPrioritizeNewStation() {
                 if (lockState === 'locked' || lockState === 'training') {
                     teamMemberAssignments[name].assignments[qIdx] = ws;
                     teamMemberAssignments[name].assignedWorkstations.push(ws);
-                    if (wsIsCS(ws)) {
-                        teamMemberAssignments[name].csAssigned = true;
-                    }
-                    if (wsIsBackboards(ws)) {
-                        teamMemberAssignments[name].backboardsAssigned = true;
+                    if (wsIsHog1or2(ws)) {
+                        teamMemberAssignments[name].Hog1or2AssignedToday = true;
                     }
                 }
             });
@@ -1761,15 +1735,11 @@ function assignWorkstationsPrioritizeNewStationEnhanced(teamMemberAssignments, s
         teamMemberAssignments[tm.name].assignments[selectedQuarterIndex] = workstation;
 
         // Save previous states to restore on backtrack
-        let csAssignedBefore = teamMemberAssignments[tm.name].csAssigned;
-        let backboardsAssignedBefore = teamMemberAssignments[tm.name].backboardsAssigned;
+        let Hog1or2AssignedBefore = teamMemberAssignments[tm.name].Hog1or2AssignedToday;
 
-        if (wsIsCS(workstation)) {
-            teamMemberAssignments[tm.name].csAssigned = true;
-        }
-
-        if (wsIsBackboards(workstation)) {
-            teamMemberAssignments[tm.name].backboardsAssigned = true;
+        // Update Hog1or2AssignedToday if assigned to Hog 1 or Hog 2
+        if (wsIsHog1or2(workstation)) {
+            teamMemberAssignments[tm.name].Hog1or2AssignedToday = true;
         }
 
         // Add workstation to assignedWorkstations for same station constraint
@@ -1783,8 +1753,7 @@ function assignWorkstationsPrioritizeNewStationEnhanced(teamMemberAssignments, s
         // Backtrack
         schedule[quarter][workstation] = schedule[quarter][workstation].filter(a => a.name !== tm.name);
         teamMemberAssignments[tm.name].assignments[selectedQuarterIndex] = null;
-        teamMemberAssignments[tm.name].csAssigned = csAssignedBefore;
-        teamMemberAssignments[tm.name].backboardsAssigned = backboardsAssignedBefore;
+        teamMemberAssignments[tm.name].Hog1or2AssignedToday = Hog1or2AssignedBefore;
         teamMemberAssignments[tm.name].assignedWorkstations.pop();
     }
 
@@ -1809,17 +1778,19 @@ function isValidAssignmentPrioritizeNewStation(tm, quarterIndex, workstation, te
                     }
                     break;
                 case 'HogOncePerDay':
-                    if (wsHog(workstation) && teamMemberAssignments[tm.name].HogAssigned) {
+                    if (wsIsHog1or2(workstation) && teamMemberAssignments[tm.name].Hog1or2AssignedToday) {
+                        return false;
+                    }
+                    break;
+                case 'noHogBackToBack':
+                    let prevWsHog = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
+                    if (prevWsHog && wsIsHog(prevWsHog) && wsIsHog(workstation)) {
                         return false;
                     }
                     break;
                 case 'noRFS1BackToBack':
-                    let prevWsSeqKit = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
-                    if (
-                        prevWsSeqKit &&
-                        ['RFS', '1'].includes(prevWsSeqKit) &&
-                        ['RFS', '1',].includes(workstation)
-                    ) {
+                    let prevWsRFS1 = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
+                    if (prevWsRFS1 && wsIsRFS1(prevWsRFS1) && wsIsRFS1(workstation)) {
                         return false;
                     }
                     break;
@@ -1832,366 +1803,4 @@ function isValidAssignmentPrioritizeNewStation(tm, quarterIndex, workstation, te
 
     // All constraints satisfied
     return true;
-}
-
-// Function to handle Export & Save Schedule
-function exportAndSaveSchedule() {
-    const today = new Date().toLocaleDateString();
-    const currentSchedule = JSON.parse(JSON.stringify(schedule)); // Deep copy
-
-    // Retrieve existing saved rotations from localStorage
-    let savedRotations = localStorage.getItem("savedRotations");
-    if (savedRotations) {
-        savedRotations = JSON.parse(savedRotations);
-    } else {
-        savedRotations = [];
-    }
-
-    // Save the current schedule with the date
-    savedRotations.push({
-        date: today,
-        schedule: currentSchedule
-    });
-
-    // Update localStorage
-    localStorage.setItem("savedRotations", JSON.stringify(savedRotations));
-
-    alert("Schedule exported and saved successfully!");
-
-    // Render the latest snapshot chart
-    renderSnapshotChart(currentSchedule);
-
-    // Render the weekly stations graph
-    renderWeeklyChart(savedRotations);
-}
-
-// Function to render Snapshot Chart using Chart.js
-function renderSnapshotChart(currentSchedule) {
-    const ctx = document.getElementById('snapshotChart').getContext('2d');
-
-    // Prepare data
-    const workstationsLabels = workstations;
-    const teamMemberColors = generateColorArray(teamMembers.length);
-    const datasets = teamMembers.map((tm, index) => {
-        const data = workstations.map(ws => {
-            // Check if the team member is assigned to this workstation in any quarter today
-            let assigned = false;
-            quarters.forEach(q => {
-                if (currentSchedule[q][ws].some(a => a.name === tm.name)) {
-                    assigned = true;
-                }
-            });
-            return assigned ? 1 : 0;
-        });
-        return {
-            label: tm.name,
-            data: data,
-            backgroundColor: teamMemberColors[index],
-            hidden: false // Initialize as visible
-        };
-    });
-
-    // Destroy existing chart if exists to avoid duplication
-    if (window.snapshotChartInstance) {
-        window.snapshotChartInstance.destroy();
-    }
-
-    window.snapshotChartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: workstationsLabels,
-            datasets: datasets
-        },
-        options: {
-            responsive: true,
-            scales: {
-                x: {
-                    stacked: true,
-                },
-                y: {
-                    stacked: true,
-                    beginAtZero: true,
-                    ticks: {
-                        display: false // Hide y-axis ticks
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    position: 'right',
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.dataset.label || '';
-                            const value = context.parsed.y;
-                            return value === 1 ? label : null;
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
-// Function to render Weekly Stations Graph using Chart.js
-function renderWeeklyChart(savedRotations) {
-    const ctx = document.getElementById('weeklyChart').getContext('2d');
-    const datesDiv = document.getElementById('weeklyDates'); // New line
-
-    // Handle empty data
-    if (savedRotations.length === 0) {
-        if (window.weeklyChartInstance) {
-            window.weeklyChartInstance.destroy();
-        }
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        ctx.font = "16px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText("No data available for the weekly chart.", ctx.canvas.width / 2, ctx.canvas.height / 2);
-
-        // Clear the dates display
-        datesDiv.innerHTML = ""; // New line
-
-        return;
-    }
-
-    // Get the last 7 days' rotations
-    const last7Rotations = savedRotations.slice(-7);
-
-    // New code: Collect dates of the rotations
-    const rotationDates = last7Rotations.map(rotation => rotation.date);
-
-    // Aggregate data: team member -> station -> count
-    let dataMap = {};
-    teamMembers.forEach(tm => {
-        dataMap[tm.name] = {};
-        workstations.forEach(ws => {
-            dataMap[tm.name][ws] = 0;
-        });
-    });
-
-    last7Rotations.forEach(rotation => {
-        const rotationSchedule = rotation.schedule;
-        quarters.forEach(q => {
-            workstations.forEach(ws => {
-                rotationSchedule[q][ws].forEach(assignment => {
-                    if (dataMap[assignment.name] && dataMap[assignment.name][ws] !== undefined) {
-                        dataMap[assignment.name][ws]++;
-                    }
-                });
-            });
-        });
-    });
-
-    // Prepare data for Chart.js
-    const workstationsLabels = workstations;
-    const teamMemberColors = generateColorArray(teamMembers.length);
-    const datasets = teamMembers.map((tm, index) => {
-        const data = workstationsLabels.map(ws => dataMap[tm.name][ws]);
-        return {
-            label: tm.name,
-            data: data,
-            backgroundColor: teamMemberColors[index],
-            hidden: false // Initialize as visible
-        };
-    });
-
-    // Destroy existing chart if exists to avoid duplication
-    if (window.weeklyChartInstance) {
-        window.weeklyChartInstance.destroy();
-    }
-
-    window.weeklyChartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: workstationsLabels,
-            datasets: datasets
-        },
-        options: {
-            responsive: true,
-            scales: {
-                x: {
-                    stacked: true,
-                },
-                y: {
-                    stacked: true,
-                    beginAtZero: true,
-                }
-            },
-            plugins: {
-                legend: {
-                    position: 'right',
-                },
-                tooltip: {
-                    enabled: true
-                }
-            }
-        }
-    });
-
-    // New code: Display the dates below the chart
-    datesDiv.innerHTML = `<p>Dates included in this chart: ${rotationDates.join(', ')}</p>`;
-}
-
-// Function to reset the weekly data
-function resetWeeklyData() {
-    // Clear the saved rotations from localStorage
-    localStorage.removeItem("savedRotations");
-    alert("Weekly data has been reset.");
-    // Re-render the weekly chart with empty data
-    renderWeeklyChart([]);
-}
-
-// Utility Function to Generate an Array of Distinct Colors
-function generateColorArray(numColors) {
-    const colors = [];
-    for (let i = 0; i < numColors; i++) {
-        const hue = i * (360 / numColors);
-        colors.push(`hsl(${hue}, 70%, 50%)`);
-    }
-    return colors;
-}
-
-// Function to toggle all datasets in a chart
-function toggleAllDatasets(chartInstance, show) {
-    chartInstance.data.datasets.forEach(function(dataset, index) {
-        // Set the hidden property in the dataset's meta
-        chartInstance.getDatasetMeta(index).hidden = !show;
-    });
-    chartInstance.update();
-}
-
-// Function to display the current date
-function displayCurrentDate() {
-    const dateElement = document.getElementById('currentDate');
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    const today = new Date();
-    dateElement.textContent = today.toLocaleDateString('en-US', options);
-}
-
-// Event Listener for Export & Save Schedule Button
-document.getElementById("exportScheduleBtn").addEventListener("click", exportAndSaveSchedule);
-
-// Event Listeners
-document.getElementById("rotateAllBtn").addEventListener("click", rotateAssignments);
-document.getElementById("prioritizeNewStationBtn").addEventListener("click", rotateAssignmentsPrioritizeNewStation);
-document.getElementById("addConstraintBtn").addEventListener("click", addConstraint);
-document.getElementById("addTeamMemberBtn").addEventListener("click", addTeamMember);
-document.getElementById("saveChangesBtn").addEventListener("click", saveData);
-
-// Updated Event Listeners for Chart Buttons
-// Snapshot Chart Buttons
-document.getElementById("snapshotHideAllBtn").addEventListener("click", function() {
-    toggleAllDatasets(window.snapshotChartInstance, false);
-});
-document.getElementById("snapshotShowAllBtn").addEventListener("click", function() {
-    toggleAllDatasets(window.snapshotChartInstance, true);
-});
-
-// Weekly Chart Buttons
-document.getElementById("weeklyHideAllBtn").addEventListener("click", function() {
-    toggleAllDatasets(window.weeklyChartInstance, false);
-});
-document.getElementById("weeklyShowAllBtn").addEventListener("click", function() {
-    toggleAllDatasets(window.weeklyChartInstance, true);
-});
-
-// Event Listener for Reset Week Button
-document.getElementById("resetWeekBtn").addEventListener("click", resetWeeklyData);
-
-// On Page Load, initialize data and generate the schedule and charts
-window.onload = function() {
-    // Load data
-    loadData();
-
-    // Initialize schedule
-    initSchedule();
-
-    // Generate constraints list
-    generateConstraintsList();
-
-    // Generate skills table
-    generateSkillsTable();
-
-    // Generate schedule (call rotateAssignments)
-    rotateAssignments();
-
-    // Generate schedule table
-    generateScheduleTable();
-
-    // Update unassigned team members box
-    updateUnassignedBox();
-
-    // Render charts with current schedule
-    renderSnapshotChart(schedule);
-
-    // Load saved rotations from localStorage
-    let savedRotations = localStorage.getItem("savedRotations");
-    if (savedRotations) {
-        savedRotations = JSON.parse(savedRotations);
-    } else {
-        savedRotations = [];
-    }
-
-    // Render the weekly chart with the saved rotations
-    renderWeeklyChart(savedRotations);
-
-    // Display the current date
-    displayCurrentDate();
-}
-
-// Rotate Quarter with Constraints
-function rotateQuarter(q) {
-    let quarterIndex = quarters.indexOf(q);
-
-    // Prepare data structures for constraints
-    let teamMemberAssignments = {};
-    teamMembers.forEach(tm => {
-        teamMemberAssignments[tm.name] = {
-            assignments: Array(quarters.length).fill(null),
-            assignedWorkstations: [],
-            csAssigned: false,
-            backboardsAssigned: false
-        };
-    });
-
-    // Fill in existing assignments, excluding non-locked in the quarter being rotated
-    for (let qIdx = 0; qIdx < quarters.length; qIdx++) {
-        let quarterName = quarters[qIdx];
-        workstations.forEach(ws => {
-            schedule[quarterName][ws].forEach(assignment => {
-                let name = assignment.name;
-                let lockState = assignment.lockState;
-                // Exclude non-locked assignments in the quarter being rotated
-                if (quarterName !== q || lockState === 'locked' || lockState === 'training') {
-                    teamMemberAssignments[name].assignments[qIdx] = ws;
-                    teamMemberAssignments[name].assignedWorkstations.push(ws);
-                    if (wsIsCS(ws)) {
-                        teamMemberAssignments[name].csAssigned = true;
-                    }
-                    if (wsIsBackboards(ws)) {
-                        teamMemberAssignments[name].backboardsAssigned = true;
-                    }
-                }
-            });
-        });
-    }
-
-    // Clear non-locked assignments only in 'schedule' for the quarter being rotated
-    workstations.forEach(ws => {
-        schedule[q][ws] = schedule[q][ws].filter(assignment => assignment.lockState === 'locked' || assignment.lockState === 'training');
-    });
-
-    // Start recursive assignment for this quarter
-    const maxExecutionTime = 10000; // Maximum time in milliseconds
-    const startTime = Date.now();
-
-    if (assignWorkstationsForQuarterEnhanced(0, quarterIndex, teamMemberAssignments, startTime, maxExecutionTime)) {
-        generateScheduleTable();
-        updateUnassignedBox();
-        // Update charts
-        renderSnapshotChart(schedule);
-    } else {
-        alert(`No valid schedule could be generated for ${q} with the current constraints.`);
-    }
 }
