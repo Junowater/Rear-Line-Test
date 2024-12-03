@@ -74,13 +74,12 @@ function loadData() {
 
     // Default constraints
     const defaultConstraints = [
-        { id: 'csOncePerDay', description: 'Team member can only work on CS1 or CS2 once per day', enabled: true, type: 'csOncePerDay' },
-        { id: 'noBackboardsAfterCS1', description: 'Team member cannot work on Backboards after CS1', enabled: true, type: 'noBackboardsAfterCS1' },
+        
         { id: 'noHogBackToBack', description: 'Cannot work on Hog stations back to back', enabled: true, type: 'noHogBackToBack' },
-        { id: 'noSequencingBackToBack', description: 'Cannot work on Sequencing stations back to back', enabled: true, type: 'noSequencingBackToBack' },
-        { id: 'backboardsOncePerDay', description: 'Team member can only work on Backboards 1 or Backboards 2 once per day', enabled: true, type: 'backboardsOncePerDay' },
+        
+        { id: 'backboardsOncePerDay', description: 'Team member can only work on Hog 1 or Hog 2 once per day', enabled: true, type: 'HogOncePerDay' },
         { id: 'noSameStationTwice', description: 'Team member cannot be assigned to the same station twice', enabled: true, type: 'noSameStationTwice' },
-        { id: 'noSequencingKitsBackToBack', description: 'Team member cannot work on Sequencing A, Sequencing B, or Kits 1 back to back', enabled: true, type: 'noSequencingKitsBackToBack' }
+        { id: 'noSequencingKitsBackToBack', description: 'Team member cannot work on RFS or 1 back to back', enabled: true, type: 'noRFS1BackToBack' }
     ];
 
     let savedConstraints = localStorage.getItem("constraints");
@@ -1043,45 +1042,22 @@ function isValidAssignment(tm, quarterIndex, workstation, teamMemberAssignments)
     for (let constraint of constraints) {
         if (constraint.enabled) {
             switch (constraint.type) {
-                case 'csOncePerDay':
-                    if (wsIsCS(workstation) && teamMemberAssignments[tm.name].csAssigned) {
-                        return false;
-                    }
-                    break;
-                case 'noBackboardsAfterCS1':
-                    let prevWorkstation = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
-                    if (prevWorkstation === "CS1" && wsIsBackboards(workstation)) {
-                        return false;
-                    }
-                    break;
-                case 'noHogBackToBack':
-                    let prevWsHog = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
-                    if (prevWsHog && wsIsHog(prevWsHog) && wsIsHog(workstation)) {
-                        return false;
-                    }
-                    break;
-                case 'noSequencingBackToBack':
-                    let prevWsSeq = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
-                    if (prevWsSeq && wsIsSequencing(prevWsSeq) && wsIsSequencing(workstation)) {
-                        return false;
-                    }
-                    break;
                 case 'noSameStationTwice':
                     if (teamMemberAssignments[tm.name].assignedWorkstations.includes(workstation)) {
                         return false;
                     }
                     break;
-                case 'backboardsOncePerDay':
-                    if (wsIsBackboards(workstation) && teamMemberAssignments[tm.name].backboardsAssigned) {
+                case 'HogOncePerDay':
+                    if (wsHog(workstation) && teamMemberAssignments[tm.name].HogAssigned) {
                         return false;
                     }
                     break;
-                case 'noSequencingKitsBackToBack':
+                case 'noRFS1BackToBack':
                     let prevWsSeqKit = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
                     if (
                         prevWsSeqKit &&
-                        ['Sequencing A', 'Sequencing B', 'Kits 1'].includes(prevWsSeqKit) &&
-                        ['Sequencing A', 'Sequencing B', 'Kits 1'].includes(workstation)
+                        ['RFS', '1'].includes(prevWsSeqKit) &&
+                        ['RFS', '1',].includes(workstation)
                     ) {
                         return false;
                     }
@@ -1827,40 +1803,22 @@ function isValidAssignmentPrioritizeNewStation(tm, quarterIndex, workstation, te
     for (let constraint of constraints) {
         if (constraint.enabled) {
             switch (constraint.type) {
-                case 'csOncePerDay':
-                    if (wsIsCS(workstation) && teamMemberAssignments[tm.name].csAssigned) {
+                case 'noSameStationTwice':
+                    if (teamMemberAssignments[tm.name].assignedWorkstations.includes(workstation)) {
                         return false;
                     }
                     break;
-                case 'noBackboardsAfterCS1':
-                    let prevWorkstation = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
-                    if (prevWorkstation === "CS1" && wsIsBackboards(workstation)) {
+                case 'HogOncePerDay':
+                    if (wsHog(workstation) && teamMemberAssignments[tm.name].HogAssigned) {
                         return false;
                     }
                     break;
-                case 'noHogBackToBack':
-                    let prevWsHog = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
-                    if (prevWsHog && wsIsHog(prevWsHog) && wsIsHog(workstation)) {
-                        return false;
-                    }
-                    break;
-                case 'noSequencingBackToBack':
-                    let prevWsSeq = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
-                    if (prevWsSeq && wsIsSequencing(prevWsSeq) && wsIsSequencing(workstation)) {
-                        return false;
-                    }
-                    break;
-                case 'backboardsOncePerDay':
-                    if (wsIsBackboards(workstation) && teamMemberAssignments[tm.name].backboardsAssigned) {
-                        return false;
-                    }
-                    break;
-                case 'noSequencingKitsBackToBack':
+                case 'noRFS1BackToBack':
                     let prevWsSeqKit = quarterIndex > 0 ? teamMemberAssignments[tm.name].assignments[quarterIndex - 1] : null;
                     if (
                         prevWsSeqKit &&
-                        ['Sequencing A', 'Sequencing B', 'Kits 1'].includes(prevWsSeqKit) &&
-                        ['Sequencing A', 'Sequencing B', 'Kits 1'].includes(workstation)
+                        ['RFS', '1'].includes(prevWsSeqKit) &&
+                        ['RFS', '1',].includes(workstation)
                     ) {
                         return false;
                     }
